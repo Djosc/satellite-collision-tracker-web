@@ -23,6 +23,7 @@ const scrapeURL = 'http://localhost:8080/collisions';
 function App() {
 	const [collisionObjectsArr, setCollisionObjectsArr] = useState(null);
 	const [positionsOverTime, setPositionsOverTime] = useState(null);
+	const [orbitData, setOrbitData] = useState(null);
 	const [ISSOrbit, setISSOrbit] = useState(null);
 
 	const viewerRef = useRef(null);
@@ -57,13 +58,27 @@ function App() {
 	useEffect(() => {
 		if (collisionObjectsArr !== null) {
 			setOrbits(collisionObjectsArr).then((orbitData) => {
-				const orbitDataWithCarto = setCartographic(orbitData, collisionObjectsArr);
-				setPositionsOverTime(orbitDataWithCarto);
+				console.log(orbitData);
+				setOrbitData(orbitData);
+				// const orbitDataWithCarto = setCartographic(orbitData, collisionObjectsArr);
+				// setPositionsOverTime(orbitDataWithCarto);
 			});
+			// setOrbits(collisionObjectsArr);
 		}
 
 		return () => {};
 	}, [collisionObjectsArr]);
+
+	useEffect(() => {
+		if (collisionObjectsArr !== null && orbitData !== null) {
+			setTimeout(() => {
+				const orbitDataWithCarto = setCartographic(orbitData, collisionObjectsArr);
+				setPositionsOverTime(orbitDataWithCarto);
+			}, 3000);
+		}
+
+		return () => {};
+	}, [orbitData]);
 
 	const goToCollisionTime = (collisionTime, satName1, satName2) => {
 		const closestApproachTime = new Date(collisionTime);

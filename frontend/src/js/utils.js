@@ -10,6 +10,8 @@ import {
 } from 'cesium';
 import * as satellite from 'satellite.js';
 
+const tleURL = 'http://localhost:8080/tles';
+
 export const fetchTLE = async (id) => {
 	let data = await fetch(
 		`https://celestrak.com/NORAD/elements/gp.php?CATNR=${id}&FORMAT=TLE`
@@ -92,30 +94,34 @@ export const setOrbits = async (collisionObjects) => {
 		two: idx.NORAD_CAT_ID_2,
 	}));
 
-	satIDs.forEach(async (id) => {
-		let promise1 = fetchTLE(id.one);
-		let promise2 = fetchTLE(id.two);
+	for (let id of satIDs) {
+		let promise1 = fetch(tleURL + '?id=' + id.one);
+		let promise2 = fetch(tleURL + '?id=' + id.two);
 		tleArr.push(promise1);
 		tleArr.push(promise2);
-	});
+	}
 
-	const orbits = await Promise.all(tleArr).then((results) => {
+	const orbits = Promise.all(tleArr).then((results) => {
 		results.forEach((tle) => {
-			let [tleLine0, tleLine1, tleLine2] = tle.split('\n');
-			tleLine0 = tleLine0.trim();
+			tle.json().then((tleText) => {
+				// console.log(tle.json());
+				// let text = tle.json();
+				let [tleLine0, tleLine1, tleLine2] = tleText.split('\n');
+				tleLine0 = tleLine0.trim();
 
-			let orbitData = computeOrbitInertial(tleLine1, tleLine2);
+				let orbitData = computeOrbitInertial(tleLine1, tleLine2);
 
-			orbitsArr.push({
-				orbit: orbitData[0],
-				name: tleLine0,
-				orbitalPeriod: orbitData[1],
-				selected: false,
+				orbitsArr.push({
+					orbit: orbitData[0],
+					name: tleLine0,
+					orbitalPeriod: orbitData[1],
+					selected: false,
+				});
 			});
 		});
 		return orbitsArr;
 	});
-
+	console.log(orbits);
 	return orbits;
 };
 
@@ -125,6 +131,7 @@ export const setOrbits = async (collisionObjects) => {
  * of a selected entity.
  */
 export const setCartographic = (orbitData, collisionObjsArr) => {
+	console.log(orbitData);
 	const collisions = [...collisionObjsArr];
 
 	let targetTimes = [];
@@ -141,12 +148,17 @@ export const setCartographic = (orbitData, collisionObjsArr) => {
 	});
 
 	for (let i = 0, j = 0; i < targetTimes.length; i++, j += 2) {
+		// if (orbitData[j + 1] !== undefined) {
 		const targetCart3Val1 = orbitData[j].orbit.getValue(targetTimes[i], new Cartesian3());
+		console.log('cart1: ' + targetCart3Val1);
+		console.log('1: ' + j + orbitData[j].orbit);
 
 		const targetCart3Val2 = orbitData[j + 1].orbit.getValue(
 			targetTimes[i],
 			new Cartesian3()
 		);
+		console.log('cart2: ' + targetCart3Val2);
+		console.log('2: ' + (j + 1) + orbitData[j + 1].orbit);
 
 		let cartoVal1 = new Cartographic.fromCartesian(targetCart3Val1);
 		let cartoVal2 = new Cartographic.fromCartesian(targetCart3Val2);
@@ -158,6 +170,7 @@ export const setCartographic = (orbitData, collisionObjsArr) => {
 
 		orbitData[j].collisionCarto = cartoVal1;
 		orbitData[j + 1].collisionCarto = cartoVal2;
+		// }
 	}
 
 	const orbitsWithCarto = orbitData;
