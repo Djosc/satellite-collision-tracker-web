@@ -1,66 +1,181 @@
-# Migration Plan: Express to NestJS
+# Migration Guide
 
-This document outlines the plan for migrating from the Express.js backend to the NestJS backend.
+This document outlines the major changes made during the migration from the old JavaScript-based stack to the new TypeScript-based stack.
 
-## Current State
+## Overview of Changes
 
-- The project currently has two backend implementations:
-  1. Express.js backend in `backend/src/js/index.js`
-  2. NestJS backend in `backend/src/main.ts` and related files
+### Frontend Migration
+- Migrated from plain JavaScript to TypeScript
+- Switched from Webpack to Vite for better development experience
+- Replaced Cesium with Mapbox GL JS + DeckGL for better performance and easier integration
+- Added proper type definitions for all components and data structures
+- Implemented modern React practices with hooks and functional components
+- Added real-time satellite position calculation using satellite.js
 
-## Migration Steps
+### Backend Migration
+- Migrated from Express to NestJS for better TypeScript support and modularity
+- Implemented proper dependency injection and service architecture
+- Added configuration management with @nestjs/config
+- Improved error handling and logging
+- Added proxy service for secure API access
 
-### 1. Verify NestJS Backend Functionality
+## Directory Structure Changes
 
-- Ensure the NestJS backend provides the same functionality as the Express backend
-- Test the NestJS API endpoints:
-  - `/satellite/collisions` - Get satellite collision data
-  - `/satellite/tle` - Get TLE data for a satellite
+Old Structure:
+```
+├── src/
+│   ├── js/
+│   │   ├── components/
+│   │   ├── utils/
+│   │   └── index.js
+│   ├── css/
+│   └── index.html
+├── server/
+│   └── index.js
+└── webpack.config.js
+```
 
-### 2. Update Frontend Configuration
+New Structure:
+```
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── services/
+│   │   ├── types/
+│   │   └── App.tsx
+│   ├── public/
+│   └── vite.config.ts
+├── backend/
+│   ├── src/
+│   │   ├── satellite/
+│   │   ├── proxy/
+│   │   └── main.ts
+│   └── nest-cli.json
+└── docker-compose.yml
+```
 
-- Update the frontend proxy to point to the NestJS backend port (3000)
-- Test the frontend with the NestJS backend
+## API Changes
 
-### 3. Update Root Package.json Scripts
+### Old Endpoints
+```javascript
+GET /api/satellites
+GET /api/collisions
+```
 
-- Add scripts to run both the old and new backends
-- Update the default backend script to use the NestJS backend
+### New Endpoints
+```typescript
+GET /satellite/tle
+GET /satellite/collisions
+ALL /proxy/mapbox/*
+```
 
-### 4. Testing
+## Environment Variables
 
-- Test the entire application with the NestJS backend
-- Ensure all features work as expected
+### Frontend (.env)
+```
+VITE_MAPBOX_TOKEN=your_mapbox_token
+```
 
-### 5. Remove Old Express Backend
+### Backend (.env)
+```
+MAPBOX_TOKEN=your_mapbox_token
+PORT=3001
+```
 
-Once the NestJS backend is fully functional and tested:
+## Type Definitions
 
-1. Remove the `backend/src/js` directory
-2. Update the root package.json to remove the old backend scripts
-3. Update the README.md to reflect the changes
+New TypeScript interfaces for data structures:
 
-## Timeline
+```typescript
+interface Satellite {
+  id: string;
+  name: string;
+  noradId: string;
+  tle: {
+    line1: string;
+    line2: string;
+  };
+  position: {
+    latitude: number;
+    longitude: number;
+    altitude: number;
+  };
+  velocity: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  lastUpdated: string;
+}
 
-1. **Phase 1**: Verify NestJS backend functionality (1 day)
-2. **Phase 2**: Update frontend configuration (1 day)
-3. **Phase 3**: Update root package.json scripts (1 day)
-4. **Phase 4**: Testing (1 day)
-5. **Phase 5**: Remove old Express backend (1 day)
+interface CollisionRisk {
+  id: string;
+  satellite1: string;
+  satellite2: string;
+  probability: number;
+  time: string;
+  distance: number;
+  severity: 'low' | 'medium' | 'high';
+}
+```
 
-## Rollback Plan
+## Development Workflow Changes
 
-If issues are encountered during the migration:
+1. Development server now uses Vite instead of Webpack:
+   ```bash
+   # Old
+   npm run start:dev
 
-1. Revert to using the Express backend by running `npm run backend:old`
-2. Fix issues in the NestJS backend
-3. Retry the migration
+   # New
+   npm run dev
+   ```
 
-## Conclusion
+2. Building for production:
+   ```bash
+   # Old
+   npm run build
 
-The migration from Express.js to NestJS will improve the codebase by:
+   # New
+   cd frontend && npm run build
+   cd backend && npm run build
+   ```
 
-- Using TypeScript throughout the backend
-- Leveraging NestJS features like dependency injection and modules
-- Providing better API documentation with Swagger
-- Improving code organization and maintainability 
+## Testing
+
+The new stack includes improved testing capabilities:
+
+```bash
+# Frontend tests
+cd frontend && npm test
+
+# Backend tests
+cd backend && npm test
+```
+
+## Docker Support
+
+Added Docker support for easier deployment:
+
+```bash
+# Build and run with Docker
+docker-compose up --build
+```
+
+## Known Issues and Solutions
+
+1. SSL Handshake Failures
+   - Solution: Use direct Mapbox requests for styles
+   - Proxy other requests through the backend
+
+2. CORS Issues
+   - Solution: Implemented proper CORS configuration in NestJS
+
+3. Environment Variables
+   - Solution: Use separate .env files for frontend and backend
+
+## Additional Resources
+
+- [NestJS Documentation](https://docs.nestjs.com/)
+- [Vite Documentation](https://vitejs.dev/)
+- [Mapbox GL JS Documentation](https://docs.mapbox.com/mapbox-gl-js/)
+- [DeckGL Documentation](https://deck.gl/) 
