@@ -5,11 +5,8 @@ export const mockSatellites: Satellite[] = [
   {
     id: '1',
     name: 'Starlink-1234',
-    noradId: '45678',
-    tle: {
-      line1: '1 45678U 20001A   21001.12345678  .00000000  00000-0  00000-0 0  9999',
-      line2: '2 45678  53.0000 180.0000 0000001   0.0000   0.0000 15.00000000    01'
-    },
+    tle_line1: '1 45678U 20001A   21001.12345678  .00000000  00000-0  00000-0 0  9999',
+    tle_line2: '2 45678  53.0000 180.0000 0000001   0.0000   0.0000 15.00000000    01',
     position: {
       latitude: 40.7128,
       longitude: -74.0060,
@@ -20,16 +17,13 @@ export const mockSatellites: Satellite[] = [
       y: 0.0,
       z: 0.0
     },
-    lastUpdated: new Date().toISOString()
+    timestamp: new Date().toISOString()
   },
   {
     id: '2',
     name: 'OneWeb-5678',
-    noradId: '45679',
-    tle: {
-      line1: '1 45679U 20001B   21001.12345678  .00000000  00000-0  00000-0 0  9999',
-      line2: '2 45679  53.0000 180.0000 0000001   0.0000   0.0000 15.00000000    01'
-    },
+    tle_line1: '1 45679U 20001B   21001.12345678  .00000000  00000-0  00000-0 0  9999',
+    tle_line2: '2 45679  53.0000 180.0000 0000001   0.0000   0.0000 15.00000000    01',
     position: {
       latitude: 34.0522,
       longitude: -118.2437,
@@ -40,16 +34,13 @@ export const mockSatellites: Satellite[] = [
       y: 0.0,
       z: 0.0
     },
-    lastUpdated: new Date().toISOString()
+    timestamp: new Date().toISOString()
   },
   {
     id: '3',
     name: 'ISS',
-    noradId: '25544',
-    tle: {
-      line1: '1 25544U 98067A   21001.12345678  .00000000  00000-0  00000-0 0  9999',
-      line2: '2 25544  51.6400 180.0000 0000001   0.0000   0.0000 15.00000000    01'
-    },
+    tle_line1: '1 25544U 98067A   21001.12345678  .00000000  00000-0  00000-0 0  9999',
+    tle_line2: '2 25544  51.6400 180.0000 0000001   0.0000   0.0000 15.00000000    01',
     position: {
       latitude: 51.5074,
       longitude: -0.1278,
@@ -60,38 +51,32 @@ export const mockSatellites: Satellite[] = [
       y: 0.0,
       z: 0.0
     },
-    lastUpdated: new Date().toISOString()
+    timestamp: new Date().toISOString()
   }
 ];
 
 // Mock collision risks
 export const mockCollisionRisks: CollisionRisk[] = [
   {
-    id: '1',
-    satellite1: '1',
-    satellite2: '2',
+    satellite1_id: '1',
+    satellite2_id: '2',
     probability: 0.05,
     time: new Date(Date.now() + 3600000).toISOString(),
-    distance: 1.2,
-    severity: 'low'
+    distance: 1.2
   },
   {
-    id: '2',
-    satellite1: '1',
-    satellite2: '3',
+    satellite1_id: '1',
+    satellite2_id: '3',
     probability: 0.15,
     time: new Date(Date.now() + 7200000).toISOString(),
-    distance: 0.8,
-    severity: 'medium'
+    distance: 0.8
   },
   {
-    id: '3',
-    satellite1: '2',
-    satellite2: '3',
+    satellite1_id: '2',
+    satellite2_id: '3',
     probability: 0.25,
     time: new Date(Date.now() + 10800000).toISOString(),
-    distance: 0.5,
-    severity: 'high'
+    distance: 0.5
   }
 ];
 

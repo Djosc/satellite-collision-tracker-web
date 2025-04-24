@@ -1,40 +1,48 @@
+export interface Position {
+  latitude: number;
+  longitude: number;
+  altitude: number;
+}
+
 export interface Satellite {
   id: string;
   name: string;
-  noradId: string;
-  tle: {
-    line1: string;
-    line2: string;
+  tle_line1: string;
+  tle_line2: string;
+  position?: Position;
+  velocity?: {
+    x: number;
+    y: number;
+    z: number;
   };
-  position: {
+  timestamp?: string;
+}
+
+export interface CollisionRisk {
+  satellite1_id: string;
+  satellite2_id: string;
+  distance: number;
+  time: string;
+  probability: number;
+}
+
+export interface SatelliteOrbit {
+  satelliteId: string;
+  positions: {
     latitude: number;
     longitude: number;
     altitude: number;
-  };
+    timestamp: string;
+  }[];
+}
+
+export interface SatellitePrediction {
+  satellite_id: string;
+  time: string;
+  position: Position;
   velocity: {
     x: number;
     y: number;
     z: number;
   };
-  lastUpdated: string;
-}
-
-export interface CollisionRisk {
-  id: string;
-  satellite1: string;
-  satellite2: string;
-  probability: number;
-  distance: number;
-  time: string;
-  severity: 'low' | 'medium' | 'high';
-}
-
-export interface SatelliteOrbit {
-  satelliteId: string;
-  positions: Array<{
-    latitude: number;
-    longitude: number;
-    altitude: number;
-    timestamp: string;
-  }>;
 } 

@@ -13,18 +13,24 @@ const CollisionList: React.FC<CollisionListProps> = ({ satellites, collisionRisk
     return satellite ? satellite.name : 'Unknown Satellite';
   };
 
+  const getRiskLevel = (probability: number): string => {
+    if (probability < 0.01) return 'low';
+    if (probability < 0.05) return 'medium';
+    return 'high';
+  };
+
   return (
     <div className="collision-list">
       <h2>Collision Risks</h2>
       <div className="collision-list-container">
         {collisionRisks.map((collision) => (
           <div
-            key={collision.id}
-            className={`collision-item severity-${collision.severity}`}
+            key={`${collision.satellite1_id}-${collision.satellite2_id}`}
+            className={`collision-item risk-${getRiskLevel(collision.probability)}`}
             onClick={() => onSelectCollision(collision)}
           >
             <div className="collision-satellites">
-              {getSatelliteName(collision.satellite1)} vs {getSatelliteName(collision.satellite2)}
+              {getSatelliteName(collision.satellite1_id)} vs {getSatelliteName(collision.satellite2_id)}
             </div>
             <div className="collision-probability">
               Probability: {(collision.probability * 100).toFixed(2)}%

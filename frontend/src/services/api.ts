@@ -1,13 +1,13 @@
 import { Satellite, CollisionRisk, SatelliteOrbit } from '../types/satellite';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+const API_BASE_URL = 'http://localhost:8000';
 
 /**
  * Fetches all satellites from the backend
  */
 export const fetchSatellites = async (): Promise<Satellite[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/satellites`);
+    const response = await fetch(`${API_BASE_URL}/satellite/tle`);
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -19,11 +19,11 @@ export const fetchSatellites = async (): Promise<Satellite[]> => {
 };
 
 /**
- * Fetches collision risks from the backend
+ * Fetches collision risks between satellites
  */
 export const fetchCollisionRisks = async (): Promise<CollisionRisk[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/collisions`);
+    const response = await fetch(`${API_BASE_URL}/satellite/collisions`);
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -37,13 +37,31 @@ export const fetchCollisionRisks = async (): Promise<CollisionRisk[]> => {
 /**
  * Fetches orbit data for a specific satellite
  */
-export const fetchSatelliteOrbit = async (satelliteId: string): Promise<SatelliteOrbit> => {
+export const fetchSatelliteOrbit = async (satelliteId: string, hours: number = 24): Promise<SatelliteOrbit> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/satellites/${satelliteId}/orbit`);
+    const response = await fetch(`${API_BASE_URL}/satellite/predict`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        satellite_ids: [satelliteId],
+        hours: hours
+      })
+    });
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
-    return await response.json();
+    const predictions = await response.json();
+    return {
+      satelliteId,
+      positions: predictions.map((p: any) => ({
+        latitude: p.position.latitude,
+        longitude: p.position.longitude,
+        altitude: p.position.altitude,
+        timestamp: p.time
+      }))
+    };
   } catch (error) {
     console.error(`Error fetching orbit for satellite ${satelliteId}:`, error);
     throw error;
